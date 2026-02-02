@@ -3,148 +3,106 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import DeckCard from "../components/DeckCard";
 
-const styles = {
-  container: {
-    maxWidth: "800px",
-    margin: "50px auto",
-    padding: "20px",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "20px",
-  },
-  button: {
-    padding: "8px 12px",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  primaryBtn: {
-    backgroundColor: "#4f46e5",
-    color: "white",
-    marginRight: "10px",
-  },
-  dangerBtn: {
-    backgroundColor: "#dc2626",
-    color: "white",
-  },
-  error: {
-    color: "red",
-    marginTop: "10px",
-  },
-  deckRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "10px",
-    borderBottom: "1px solid #e5e7eb",
-  },
-  deckName: {
-    cursor: "pointer",
-    margin: 0,
-  },
-};
-
 export default function Dashboard() {
   const [decks, setDecks] = useState([]);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchDecks = async () => {
+      try {
+        const res = await axios.get("http://localhost:7000/api/decks");
+        setDecks(res.data);
+      } catch (err) {
+        console.error(err);
+        setError(err.response?.data?.message || "Failed to load decks");
+      }
+    };
     fetchDecks();
   }, []);
 
-  const fetchDecks = async () => {
-    try {
-      const res = await axios.get("http://localhost:7000/api/decks");
-      setDecks(res.data);
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || "Failed to load decks");
-    }
-  };
-
   const createDeck = async () => {
-    const name = prompt("Enter deck name");
-    if (!name) return;
-
     try {
+      const name = prompt("Deck name");
+      if (!name) return;
+
       const user = JSON.parse(localStorage.getItem("user"));
-      if (!user) throw new Error("User not logged in");
+      if (!user) {
+        setError("User not logged in");
+        return;
+      }
 
       const res = await axios.post("http://localhost:7000/api/decks", {
         name,
         userId: user._id,
       });
 
-      setDecks((prev) => [...prev, res.data]);
+      setDecks([...decks, res.data]);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || err.message);
-    }
-  };
-
-  const deleteDeck = async (deckId) => {
-    if (!window.confirm("Delete this deck?")) return;
-
-    try {
-      await axios.delete(`http://localhost:7000/api/decks/${deckId}`);
-      setDecks((prev) => prev.filter((deck) => deck._id !== deckId));
-    } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.message || "Failed to delete deck");
+      setError(err.response?.data?.message || "Failed to create deck");
     }
   };
 
   const logout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
     navigate("/");
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2>Dashboard</h2>
-        <div>
-          <button
-            onClick={createDeck}
-            style={{ ...styles.button, ...styles.primaryBtn }}
-          >
-            + Create Deck
-          </button>
-          <button
-            onClick={logout}
-            style={{ ...styles.button, ...styles.dangerBtn }}
-          >
-            Logout
-          </button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#18161D] py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+          <h2 className="text-3xl font-bold text-white mb-4 sm:mb-0">
+            Dashboard
+          </h2>
 
-      {error && <p style={styles.error}>{error}</p>}
-
-      {decks.length === 0 ? (
-        <p>No decks yet. Create one!</p>
-      ) : (
-        decks.map((deck) => (
-          <div key={deck._id} style={styles.deckRow}>
-            <h3
-              style={styles.deckName}
-              onClick={() => navigate(`/deck/${deck._id}`)}
-            >
-              {deck.name}
-            </h3>
+          <div className="flex gap-3">
             <button
-              onClick={() => deleteDeck(deck._id)}
-              style={{ ...styles.button, ...styles.dangerBtn }}
+              onClick={createDeck}
+              className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg transition"
             >
-              Delete
+              Create Deck
+            </button>
+
+            <button
+              onClick={logout}
+              className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition"
+            >
+              Logout
             </button>
           </div>
-        ))
-      )}
+        </div>
+
+        {/* Error */}
+        {error && (
+          <p className="text-red-400 mb-6 font-medium text-center">
+            {error}
+          </p>
+        )}
+
+        {/* Decks */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {decks.length === 0 ? (
+            <p className="text-gray-400 col-span-full text-center">
+              No decks yet. Create one!
+            </p>
+          ) : (
+            decks.map((deck) => (
+              <div
+                key={deck._id}
+                className="transition duration-300
+                           hover:-translate-y-1
+                           hover:shadow-[0_0_25px_rgba(255,255,255,0.12)]"
+              >
+                <DeckCard deck={deck} />
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }

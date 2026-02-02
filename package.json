@@ -11,6 +11,7 @@
     "axios": "^1.6.0",
     "cors": "^2.8.6",
     "katex": "^0.16.9",
+    "lucide-react": "^0.563.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-katex": "^3.0.0",
@@ -43,8 +44,8 @@
     ]
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.23",
+    "autoprefixer": "^10.4.24",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^3.4.19"
   }
 }

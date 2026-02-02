@@ -6,18 +6,25 @@ export default function DeckCard({ deck }) {
   return (
     <div
       onClick={() => navigate(`/deck/${deck._id}`)}
-      style={{
-        border: "1px solid #ccc",
-        borderRadius: "6px",
-        padding: "15px",
-        marginBottom: "10px",
-        cursor: "pointer",
-        transition: "all 0.2s",
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f0f0f0")}
-      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "white")}
+      className="
+        bg-transparent
+        border border-white/20
+        rounded-lg
+        p-4
+        cursor-pointer
+
+        transition-all duration-300
+        hover:border-white
+        hover:shadow-[0_0_18px_rgba(255,255,255,0.15)]
+        hover:-translate-y-1
+
+        active:scale-[0.98]
+        focus:outline-none
+      "
     >
-      <h3 style={{ margin: 0 }}>{deck.name}</h3>
+      <h3 className="text-white font-semibold text-lg">
+        {deck.name}
+      </h3>
     </div>
   );
 }
